@@ -7,9 +7,17 @@ import { GradeBadge } from "@/components/ui/GradeBadge";
 import { PriceBlock } from "@/components/ui/PriceBlock";
 import { TransparencyCard } from "@/components/TransparencyCard";
 import { ProductCard, VerifiedCheck } from "@/components/ProductCard";
+<<<<<<< HEAD
 import { conditionLabel, gradeExplainer } from "@/lib/vocab";
 import { formatPrice } from "@/lib/format";
 import { startCheckout } from "@/lib/checkout-actions";
+=======
+import { Gallery } from "@/components/Gallery";
+import { conditionLabel, gradeExplainer } from "@/lib/vocab";
+import { formatPrice } from "@/lib/format";
+import { startCheckout } from "@/lib/checkout-actions";
+import { createAlert } from "@/lib/alert-actions";
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 
 // 05.4 — answers in order: what is it → what state → why cheaper → what do
 // I pay → am I protected. Flaw photos live in the main gallery, labeled.
@@ -44,7 +52,12 @@ export async function generateMetadata({
 export default async function ProductPage({ params }: PageProps<"/urun/[slug]">) {
   const { slug } = await params;
   const l = await getListing(slug);
+<<<<<<< HEAD
   if (!l || l.status === "removed" || l.status === "draft") notFound();
+=======
+  // Public states only — anything pre-curation or pulled stays invisible.
+  if (!l || (l.status !== "live" && l.status !== "sold_out")) notFound();
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 
   const sold = l.status === "sold_out";
   const similar = await db.listing.findMany({
@@ -67,6 +80,7 @@ export default async function ProductPage({ params }: PageProps<"/urun/[slug]">)
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-12">
+<<<<<<< HEAD
         {/* Gallery — flaw photos in the main gallery, labeled (05.4) */}
         <section aria-label="Ürün fotoğrafları" className="lg:col-span-7">
           <div className="space-y-4">
@@ -97,6 +111,22 @@ export default async function ProductPage({ params }: PageProps<"/urun/[slug]">)
               </figure>
             ))}
           </div>
+=======
+        {/* Gallery — swipeable, flaw photos in the main flow, labeled (05.4) */}
+        <section aria-label="Ürün fotoğrafları" className="lg:col-span-7">
+          <Gallery
+            photos={l.photos.map((p) => ({
+              id: p.id,
+              url: p.url,
+              width: p.width,
+              height: p.height,
+              isFlaw: p.isFlaw,
+              flawLabel: p.flawLabel,
+            }))}
+            title={l.title}
+            dimFirst={sold}
+          />
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
         </section>
 
         {/* Buy box — sticky on desktop (05.4) */}
@@ -127,9 +157,26 @@ export default async function ProductPage({ params }: PageProps<"/urun/[slug]">)
               <div className="rounded-lg border border-line bg-subtle p-5">
                 <p className="font-semibold text-ink">Satıldı.</p>
                 <p className="mt-1 text-sm text-ink-secondary">
+<<<<<<< HEAD
                   Burada işler hızlı olur. Benzeri gelince ilk sen öğren —
                   alarm özelliği Faz 0&apos;da bağlanıyor.
                 </p>
+=======
+                  Burada işler hızlı olur. Benzeri gelince ilk sen öğren.
+                </p>
+                {/* Sold page is an acquisition page (05.4): brand+category alert */}
+                <form action={createAlert} className="mt-4">
+                  <input type="hidden" name="q" value={l.brand.name} />
+                  <input type="hidden" name="categoryId" value={l.categoryId} />
+                  <input type="hidden" name="donus" value={`/urun/${l.slug}`} />
+                  <button
+                    type="submit"
+                    className="inline-flex h-11 items-center rounded-md bg-inverse px-5 text-sm font-semibold text-ink-inverse"
+                  >
+                    🔔 Benzeri gelince haber ver
+                  </button>
+                </form>
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
               </div>
             ) : (
               <div className="space-y-3">

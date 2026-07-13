@@ -3,8 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { readSessionId } from "@/lib/session";
+<<<<<<< HEAD
 import { formatPrice } from "@/lib/format";
 import { conditionLabel } from "@/lib/vocab";
+=======
+import { formatDateTime, formatPrice } from "@/lib/format";
+import { conditionLabel, disputeReasonLabel } from "@/lib/vocab";
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 import { GradeBadge } from "@/components/ui/GradeBadge";
 import { confirmDelivery } from "@/lib/order-actions";
 
@@ -28,13 +33,28 @@ export default async function OrderPage({ params }: PageProps<"/siparis/[id]">) 
   const sid = await readSessionId();
   const order = await db.order.findUnique({
     where: { id },
+<<<<<<< HEAD
     include: { listing: true, seller: true, snapshot: true },
+=======
+    include: { listing: true, seller: true, snapshot: true, dispute: true },
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   });
   if (!order || !sid || order.guestSessionId !== sid) notFound();
 
   const snap = order.snapshot!;
   const photos: string[] = JSON.parse(snap.photoUrls);
+<<<<<<< HEAD
   const stageIndex = TIMELINE.findIndex((t) => t.key === order.status);
+=======
+  const dispute = order.dispute;
+  const disputePhotos: string[] = dispute ? JSON.parse(dispute.photoUrls) : [];
+  // Disputed/refunded orders freeze the timeline at "shipped" (07.4) —
+  // the dispute panel below tells the real story.
+  const stageIndex =
+    order.status === "dispute_open" || order.status === "refunded"
+      ? TIMELINE.findIndex((t) => t.key === "shipped")
+      : TIMELINE.findIndex((t) => t.key === order.status);
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 
   return (
     <div className="mx-auto max-w-[720px] px-4 py-12 md:px-6">
@@ -110,6 +130,58 @@ export default async function OrderPage({ params }: PageProps<"/siparis/[id]">) 
         </p>
       </section>
 
+<<<<<<< HEAD
+=======
+      {/* Dispute state (10.3) — the panel tells the story in plain language */}
+      {dispute && (
+        <section className="mt-8 rounded-lg border border-line bg-surface p-5">
+          <h2 className="font-semibold text-ink">
+            {dispute.status === "open" ? "İtirazın inceleniyor" : "İtiraz sonuçlandı"}
+          </h2>
+          <p className="mt-1 text-sm text-ink-secondary">
+            Sebep: <span className="font-semibold text-ink">{disputeReasonLabel(dispute.reason)}</span>
+            {" · "}Açılış: {formatDateTime(dispute.openedAt)}
+          </p>
+          <p className="mt-3 rounded-md border border-line bg-subtle px-4 py-3 text-sm text-ink-secondary">
+            {dispute.buyerStatement}
+          </p>
+          {disputePhotos.length > 0 && (
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {disputePhotos.map((u) => (
+                <li key={u}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={u} alt="İtiraz fotoğrafı" width={96} height={72} className="rounded-md border border-line object-cover" />
+                </li>
+              ))}
+            </ul>
+          )}
+          {dispute.sellerResponse && (
+            <p className="mt-3 text-sm text-ink-secondary">
+              <span className="font-semibold text-ink">{order.seller.displayName} yanıtı:</span>{" "}
+              {dispute.sellerResponse}
+            </p>
+          )}
+          {dispute.status === "open" ? (
+            <p className="mt-3 text-xs text-ink-muted">
+              Ödemen karar verilene kadar güvende. Satıcının 48 saat yanıt hakkı
+              var; hedef, açılıştan itibaren en geç 7 günde kesin karar.
+            </p>
+          ) : (
+            <div className="mt-4 rounded-md border border-line-strong bg-subtle px-4 py-3">
+              <p className="text-sm font-semibold text-ink">
+                {dispute.resolution === "refund"
+                  ? "Karar: ücret iadesi — ödemen iade edildi (simülasyon modunda)."
+                  : "Karar: ürün, satın alma anındaki karta uygun bulundu — ödeme satıcıya aktarıldı."}
+              </p>
+              {dispute.resolutionNote && (
+                <p className="mt-1 text-sm text-ink-secondary">{dispute.resolutionNote}</p>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
       {/* 05.6 — confirm delivery + the one-question grade check */}
       {order.status === "shipped" && (
         <section className="mt-8 rounded-lg border border-line bg-surface p-5">
@@ -141,6 +213,17 @@ export default async function OrderPage({ params }: PageProps<"/siparis/[id]">) 
               Teslim aldım, onayla
             </button>
           </form>
+<<<<<<< HEAD
+=======
+          {/* Dispute entry lives on the order, not in a help maze (05.6) */}
+          <p className="mt-4 border-t border-line pt-3 text-sm text-ink-secondary">
+            Bu siparişte sorun mu var?{" "}
+            <Link href={`/siparis/${order.id}/itiraz`} className="font-semibold text-ink underline underline-offset-2">
+              Sorun bildir
+            </Link>{" "}
+            — cayma hakkı, hasar ya da ilana uymayan ürün.
+          </p>
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
         </section>
       )}
 

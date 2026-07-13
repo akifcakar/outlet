@@ -50,7 +50,12 @@ export default async function ListingWizard({
     },
   });
   if (!listing) notFound();
+<<<<<<< HEAD
   if (listing.status !== "draft") redirect(`/urun/${listing.slug}`);
+=======
+  // Editable states only: drafts and rejections (fix + resubmit, 06.3).
+  if (listing.status !== "draft" && listing.status !== "rejected") redirect("/satici");
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 
   const step = Math.min(Math.max(Number(sp.adim) || 1, 1), 7);
   const error = typeof sp.hata === "string" ? sp.hata : null;
@@ -87,6 +92,18 @@ export default async function ListingWizard({
         </p>
       )}
 
+<<<<<<< HEAD
+=======
+      {/* Rejection carries a specific fix (10.2) — keep it visible on every step */}
+      {listing.status === "rejected" && listing.curationNote && (
+        <div className="mt-5 rounded-md border border-line-strong bg-subtle px-4 py-3 text-sm">
+          <p className="font-semibold text-ink">Kürasyon düzeltme istedi:</p>
+          <p className="mt-1 text-ink-secondary">{listing.curationNote}</p>
+          <p className="mt-1 text-xs text-ink-muted">Düzelt ve 7. adımdan yeniden gönder.</p>
+        </div>
+      )}
+
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
       <div className="mt-6">
         {step === 1 && (
           <section className="space-y-4">
@@ -281,9 +298,18 @@ export default async function ListingWizard({
                 type="submit"
                 className="flex h-13 w-full items-center justify-center rounded-md bg-inverse px-6 text-[15px] font-semibold text-ink-inverse transition-transform duration-100 active:scale-[0.98]"
               >
+<<<<<<< HEAD
                 Yayınla
               </button>
             </form>
+=======
+                {listing.status === "rejected" ? "Düzeltildi — yeniden gönder" : "Kürasyona gönder"}
+              </button>
+            </form>
+            <p className="text-center text-xs text-ink-muted">
+              İlanın yayına alınmadan önce Atlas kürasyonundan geçer — hedef aynı iş günü (16:00 öncesi gönderimler).
+            </p>
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
             <StepNav listingId={listing.id} step={step} />
           </section>
         )}

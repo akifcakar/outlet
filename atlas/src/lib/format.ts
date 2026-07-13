@@ -22,3 +22,18 @@ export function savingsPercent(originalKurus: number, priceKurus: number): numbe
 export function savingsAmount(originalKurus: number, priceKurus: number): string {
   return formatPrice(originalKurus - priceKurus);
 }
+<<<<<<< HEAD
+=======
+
+const DATE_TIME = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** "13 Tem 14:05" — ops/queue timestamps */
+export function formatDateTime(d: Date): string {
+  return DATE_TIME.format(d);
+}
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)

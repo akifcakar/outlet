@@ -3,8 +3,14 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getCurrentSeller } from "@/lib/seller-session";
 import { createDraft, markShipped, selectSeller } from "@/lib/seller-actions";
+<<<<<<< HEAD
 import { conditionLabel } from "@/lib/vocab";
 import { formatPrice, savingsPercent } from "@/lib/format";
+=======
+import { respondDispute } from "@/lib/dispute-actions";
+import { conditionLabel, disputeReasonLabel } from "@/lib/vocab";
+import { formatDateTime, formatPrice, savingsPercent } from "@/lib/format";
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 import { GradeBadge } from "@/components/ui/GradeBadge";
 
 // 06.4 MVP dashboard: action queue first (to-ship), then listings, payouts
@@ -18,6 +24,10 @@ export const metadata: Metadata = { title: "Satıcı Paneli" };
 export default async function SellerDashboard({ searchParams }: PageProps<"/satici">) {
   const sp = await searchParams;
   const error = typeof sp.hata === "string" ? sp.hata : null;
+<<<<<<< HEAD
+=======
+  const submitted = sp.gonderildi === "1";
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   const seller = await getCurrentSeller();
 
   if (!seller) {
@@ -48,7 +58,11 @@ export default async function SellerDashboard({ searchParams }: PageProps<"/sati
     );
   }
 
+<<<<<<< HEAD
   const [toShip, listings] = await Promise.all([
+=======
+  const [toShip, listings, disputes] = await Promise.all([
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
     db.order.findMany({
       where: { sellerId: seller.id, status: "paid" },
       orderBy: { createdAt: "asc" },
@@ -59,10 +73,23 @@ export default async function SellerDashboard({ searchParams }: PageProps<"/sati
       orderBy: { createdAt: "desc" },
       include: { _count: { select: { orders: true } } },
     }),
+<<<<<<< HEAD
+=======
+    db.dispute.findMany({
+      where: { status: "open", order: { sellerId: seller.id } },
+      orderBy: { openedAt: "asc" },
+      include: { order: { include: { listing: true, snapshot: true } } },
+    }),
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   ]);
 
   const STATUS_TR: Record<string, string> = {
     draft: "Taslak",
+<<<<<<< HEAD
+=======
+    submitted: "Kürasyonda",
+    rejected: "Düzeltme istendi",
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
     live: "Yayında",
     sold_out: "Satıldı",
     removed: "Kaldırıldı",
@@ -91,6 +118,77 @@ export default async function SellerDashboard({ searchParams }: PageProps<"/sati
         </p>
       )}
 
+<<<<<<< HEAD
+=======
+      {submitted && (
+        <p className="mt-4 rounded-md border border-line bg-subtle px-4 py-3 text-sm text-ink-secondary">
+          İlanın kürasyona gönderildi — hedef aynı iş günü (16:00 öncesi
+          gönderimler). Onaylanınca yayına alınır; düzeltme gerekirse burada
+          spesifik notunu görürsün.
+        </p>
+      )}
+
+      {/* Open disputes — 48h response window (10.3), so they outrank shipping */}
+      {disputes.length > 0 && (
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold text-ink">
+            Açık itirazlar <span className="text-ink-muted">({disputes.length})</span>
+          </h2>
+          <ul className="space-y-3">
+            {disputes.map((d) => {
+              const dPhotos: string[] = JSON.parse(d.photoUrls);
+              return (
+                <li key={d.id} className="rounded-lg border border-line-strong bg-surface p-4">
+                  <p className="font-semibold text-ink">{d.order.listing.title}</p>
+                  <p className="mt-0.5 text-sm text-ink-secondary">
+                    {disputeReasonLabel(d.reason)} · {formatDateTime(d.openedAt)}
+                    {d.order.snapshot && <> · ilanda Grade {d.order.snapshot.grade}</>}
+                  </p>
+                  <p className="mt-2 rounded-md border border-line bg-subtle px-3 py-2 text-sm text-ink-secondary">
+                    {d.buyerStatement}
+                  </p>
+                  {dPhotos.length > 0 && (
+                    <ul className="mt-2 flex flex-wrap gap-2">
+                      {dPhotos.map((u) => (
+                        <li key={u}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={u} alt="Alıcı fotoğrafı" width={80} height={60} className="rounded-md border border-line object-cover" />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {d.sellerResponse ? (
+                    <p className="mt-2 text-sm text-ink-muted">
+                      Yanıtın gönderildi — Atlas kararını bekliyor.
+                    </p>
+                  ) : (
+                    <form action={respondDispute} className="mt-3 flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="disputeId" value={d.id} />
+                      <div className="min-w-64 flex-1">
+                        <label htmlFor={`dr-${d.id}`} className="mb-1 block text-xs font-semibold text-ink">
+                          Yanıtın (48 saat içinde)
+                        </label>
+                        <input
+                          id={`dr-${d.id}`}
+                          name="response"
+                          required
+                          placeholder="Karşı görüşün ya da kabulün — karar Şeffaflık Kartı'na göre verilir."
+                          className="h-10 w-full rounded-sm border border-line bg-surface px-3 text-sm text-ink placeholder:text-ink-muted"
+                        />
+                      </div>
+                      <button type="submit" className="h-10 rounded-md bg-inverse px-4 text-sm font-semibold text-ink-inverse">
+                        Yanıtla
+                      </button>
+                    </form>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
       {/* Action queue first (06.4): to-ship */}
       <section className="mt-10">
         <h2 className="mb-4 text-lg font-semibold text-ink">
@@ -178,11 +276,28 @@ export default async function SellerDashboard({ searchParams }: PageProps<"/sati
                       </span>
                     )}
                   </p>
+<<<<<<< HEAD
+=======
+                  {l.status === "rejected" && l.curationNote && (
+                    <p className="mt-1.5 rounded-md border border-line-strong bg-subtle px-3 py-2 text-sm text-ink-secondary">
+                      <span className="font-semibold text-ink">Kürasyon notu:</span> {l.curationNote}
+                    </p>
+                  )}
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
                 </div>
                 {l.status === "draft" ? (
                   <Link href={`/satici/ilan/${l.id}?adim=1`} className="text-sm font-semibold text-ink underline underline-offset-2">
                     Devam et
                   </Link>
+<<<<<<< HEAD
+=======
+                ) : l.status === "rejected" ? (
+                  <Link href={`/satici/ilan/${l.id}?adim=1`} className="text-sm font-semibold text-ink underline underline-offset-2">
+                    Düzelt ve yeniden gönder
+                  </Link>
+                ) : l.status === "submitted" ? (
+                  <span className="text-sm text-ink-muted">İncelemede</span>
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
                 ) : (
                   <Link href={`/urun/${l.slug}`} className="text-sm text-ink-secondary hover:text-ink">
                     İlana git →

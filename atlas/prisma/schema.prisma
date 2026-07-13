@@ -26,11 +26,19 @@ model Seller {
   displayName String
   legalName   String
   city        String
+<<<<<<< HEAD
   status      String    @default("approved") // applied | in_review | approved | suspended
+=======
+  status      String    @default("approved") // applied | in_review | approved | declined | suspended
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   verifiedAt  DateTime?
   createdAt   DateTime  @default(now())
   listings    Listing[]
   orders      Order[]
+<<<<<<< HEAD
+=======
+  strikes     Strike[]
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 }
 
 model Category {
@@ -41,6 +49,10 @@ model Category {
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
   children Category[] @relation("CategoryTree")
   listings Listing[]
+<<<<<<< HEAD
+=======
+  savedSearches SavedSearch[]
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 }
 
 model Brand {
@@ -70,16 +82,80 @@ model Listing {
   handlingDays       Int       @default(2)
   shippingKurus      Int       @default(0)
   warrantyText       String
+<<<<<<< HEAD
   status             String    @default("live") // draft | submitted | live | sold_out | removed
+=======
+  status             String    @default("live") // draft | submitted | rejected | live | sold_out | removed
+  submittedAt        DateTime? // curation queue entry time — SLA clock (10.2)
+  curationNote       String? // rejection carries a specific fix, shown to the seller (06.3)
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   publishedAt        DateTime?
   soldOutAt          DateTime?
   createdAt          DateTime  @default(now())
   photos             ListingPhoto[]
   holds              StockHold[]
   orders             Order[]
+<<<<<<< HEAD
 
   @@index([status, categoryId])
   @@index([status, publishedAt])
+=======
+  notifications      Notification[]
+
+  @@index([status, categoryId])
+  @@index([status, publishedAt])
+  @@index([status, submittedAt])
+}
+
+// 07.5 — SavedSearch (Alert): the retention engine. Keyed to the guest
+// session (07.1) until real accounts land; the swap is the sessionId column.
+// Filters are concrete columns, not JSON — MVP has exactly these three knobs.
+model SavedSearch {
+  id            String    @id @default(cuid())
+  sessionId     String
+  queryText     String? // contains-match on title/brand, like /ara
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  maxPriceKurus Int?
+  active        Boolean   @default(true)
+  lastMatchedAt DateTime?
+  createdAt     DateTime  @default(now())
+  notifications Notification[]
+
+  @@index([active])
+  @@index([sessionId])
+}
+
+// 07.5 — one table for all notifications; MVP delivers in-app (dashboard +
+// header badge), email/push channels attach later.
+model Notification {
+  id            String    @id @default(cuid())
+  sessionId     String
+  type          String // alert_match | (order events later)
+  listingId     String?
+  listing       Listing?  @relation(fields: [listingId], references: [id])
+  savedSearchId String?
+  savedSearch   SavedSearch? @relation(fields: [savedSearchId], references: [id])
+  readAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([sessionId, readAt])
+}
+
+// 07.6 / 08.3 — every ops decision and state transition leaves a trace.
+// Append-only: no update/delete path exists in application code.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      String // "ops:dev" | "seller:<id>" | "system:<job>"
+  action     String // e.g. listing.approve, listing.reject, seller.suspend
+  entityType String // Listing | Seller | Order
+  entityId   String
+  detail     String? // human-readable context (rejection reason, old→new status)
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 }
 
 model ListingPhoto {
@@ -130,10 +206,51 @@ model Order {
   completedAt     DateTime?
   createdAt       DateTime @default(now())
   snapshot        TransparencySnapshot?
+<<<<<<< HEAD
+=======
+  dispute         Dispute?
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 
   @@index([guestSessionId])
 }
 
+<<<<<<< HEAD
+=======
+// 07.4 / 10.3 — the dispute, judged against the TransparencySnapshot.
+// One per order; structured flow only, no negotiation threads.
+model Dispute {
+  id             String    @id @default(cuid())
+  orderId        String    @unique
+  order          Order     @relation(fields: [orderId], references: [id])
+  reason         String // not_as_described | damaged_in_transit | not_delivered | withdrawal_14day
+  buyerStatement String
+  photoUrls      String    @default("[]") // JSON array — buyer evidence (required for not_as_described)
+  sellerResponse String?
+  status         String    @default("open") // open | resolved
+  resolution     String? // refund | release  (partial: post-MVP)
+  resolutionNote String? // plain-language explanation — outcomes are trust moments (10.3)
+  openedAt       DateTime  @default(now())
+  respondedAt    DateTime?
+  resolvedAt     DateTime?
+
+  @@index([status, openedAt])
+}
+
+// 10.4 penalty matrix. Strikes expire after 12 months; 3 active → suspension.
+model Strike {
+  id        String   @id @default(cuid())
+  sellerId  String
+  seller    Seller   @relation(fields: [sellerId], references: [id])
+  reason    String // misgraded_item | shipping_sla | seller_fault_cancel | fake_discount | off_platform
+  orderId   String?
+  detail    String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([sellerId, expiresAt])
+}
+
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 // 07.4 — "the contract": immutable copy of what the buyer saw at purchase.
 model TransparencySnapshot {
   id                 String   @id @default(cuid())

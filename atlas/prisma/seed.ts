@@ -24,6 +24,13 @@ function svg(text: string, sub: string, tone: string): string {
 }
 
 function writePhoto(file: string, title: string, sub: string, tone = "#f5f5f5"): string {
+<<<<<<< HEAD
+=======
+  // A real (generated) hero image wins over the SVG placeholder when present —
+  // keeps re-seeds from downgrading listings back to placeholders.
+  const real = file.replace(/\.svg$/, ".png");
+  if (fs.existsSync(path.join(PRODUCTS_DIR, real))) return `/products/${real}`;
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   fs.writeFileSync(path.join(PRODUCTS_DIR, file), svg(title, sub, tone), "utf8");
   return `/products/${file}`;
 }
@@ -43,6 +50,10 @@ type SeedListing = {
   seller: number;
   flaws?: string[];
   sold?: boolean;
+<<<<<<< HEAD
+=======
+  submitted?: boolean; // sits in the curation queue (10.2) instead of live
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 };
 
 const listings: SeedListing[] = [
@@ -58,12 +69,21 @@ const listings: SeedListing[] = [
   { slug: "tefal-optigrill-elite", title: "Tefal OptiGrill Elite XL", brand: "Tefal", category: "kucuk-ev-aletleri", condition: "open_box", grade: "A", why: "Kutusu açıldı, ürün denenmedi. Teşhir yedeğiydi.", original: 8999, price: 6499, warranty: "24 ay Tefal garantisi", description: "12 otomatik program, XL ızgara yüzeyi. Fiili kullanım yok.", seller: 0 },
   { slug: "miele-complete-c3", title: "Miele Complete C3 Toz Torbalı Süpürge", brand: "Miele", category: "kucuk-ev-aletleri", condition: "returned_product", grade: "A", why: "Renk değişikliği için iade edildi, hiç kullanılmadı.", original: 15999, price: 11999, warranty: "24 ay Miele Türkiye garantisi", description: "Obsidyen siyah. İade nedeni renk tercihi; bant kontrolünden geçti, kullanılmamış.", seller: 1, sold: true },
   { slug: "lg-tone-free-t90", title: "LG Tone Free T90 Kulaklık", brand: "LG", category: "elektronik", condition: "factory_new", grade: "A", why: "Kampanya fazlası sıfır stok.", original: 5999, price: 3999, warranty: "24 ay LG Türkiye garantisi", description: "Dolby Atmos, UV temizlemeli kılıf. Sıfır, bandrollü kutusunda.", seller: 2, sold: true },
+<<<<<<< HEAD
+=======
+  { slug: "braun-multiquick-9", title: "Braun MultiQuick 9 El Blenderi", brand: "Braun", category: "kucuk-ev-aletleri", condition: "open_box", grade: "A", why: "Vitrin yenileme sırasında kutusu açıldı, kullanılmadı.", original: 6499, price: 4799, warranty: "24 ay distribütör garantisi", description: "ActiveBlade teknolojisi, tüm aksesuar seti kutusunda.", seller: 0, submitted: true },
+  { slug: "sage-barista-express", title: "Sage Barista Express Espresso Makinesi", brand: "Sage", category: "ev-mutfak", condition: "display_item", grade: "B", why: "Showroom tezgahında 6 hafta sergilendi.", original: 32999, price: 23999, warranty: "12 ay satıcı garantisi", description: "Entegre öğütücülü yarı otomatik espresso makinesi. Tüm aparatları tam.", seller: 1, flaws: ["Damlama tepsisinde hafif çizik — 4. fotoğrafta"], submitted: true },
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 ];
 
 async function main() {
   fs.mkdirSync(PRODUCTS_DIR, { recursive: true });
 
   // idempotent re-seed
+<<<<<<< HEAD
+=======
+  await db.auditLog.deleteMany();
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   await db.transparencySnapshot.deleteMany();
   await db.order.deleteMany();
   await db.stockHold.deleteMany();
@@ -93,6 +113,20 @@ async function main() {
     );
   }
 
+<<<<<<< HEAD
+=======
+  // A pending application so the ops vetting queue (10.1) has content.
+  await db.seller.create({
+    data: {
+      slug: "bogazici-ev-gerecleri",
+      displayName: "Boğaziçi Ev Gereçleri",
+      legalName: "Boğaziçi Ev Gereçleri Paz. Ltd. Şti.",
+      city: "İstanbul",
+      status: "applied",
+    },
+  });
+
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
   const brandSlugs = new Map<string, string>();
   for (const l of listings) {
     const slug = l.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -132,13 +166,20 @@ async function main() {
         priceKurus: l.price * 100,
         warrantyText: l.warranty,
         stock: l.sold ? 0 : 1,
+<<<<<<< HEAD
         status: l.sold ? "sold_out" : "live",
         publishedAt: new Date(Date.now() - dayOffset * 36e5 * 7),
+=======
+        status: l.sold ? "sold_out" : l.submitted ? "submitted" : "live",
+        publishedAt: l.submitted ? null : new Date(Date.now() - dayOffset * 36e5 * 7),
+        submittedAt: l.submitted ? new Date() : null,
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
         soldOutAt: l.sold ? new Date() : null,
         sellerId: sellerRows[l.seller].id,
         categoryId: catId(l.category),
         brandId: brandSlugs.get(l.brand)!,
         photos: {
+<<<<<<< HEAD
           create: photos.map((p, i) => ({
             position: i,
             url: writePhoto(p.file, l.title, p.sub, p.tone),
@@ -147,6 +188,20 @@ async function main() {
             isFlaw: p.isFlaw,
             flawLabel: p.label,
           })),
+=======
+          create: photos.map((p, i) => {
+            const url = writePhoto(p.file, l.title, p.sub, p.tone);
+            const real = url.endsWith(".png");
+            return {
+              position: i,
+              url,
+              width: real ? 1200 : 800,
+              height: real ? 896 : 600,
+              isFlaw: p.isFlaw,
+              flawLabel: p.label,
+            };
+          }),
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
         },
       },
     });
@@ -155,7 +210,14 @@ async function main() {
 
   const live = await db.listing.count({ where: { status: "live" } });
   const sold = await db.listing.count({ where: { status: "sold_out" } });
+<<<<<<< HEAD
   console.log(`Seed OK — ${live} live, ${sold} sold listings, ${sellerRows.length} sellers.`);
+=======
+  const queued = await db.listing.count({ where: { status: "submitted" } });
+  console.log(
+    `Seed OK — ${live} live, ${sold} sold, ${queued} in curation queue, ${sellerRows.length}+1 sellers (1 applied).`,
+  );
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 }
 
 main()

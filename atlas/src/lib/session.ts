@@ -11,6 +11,14 @@ export async function readSessionId(): Promise<string | null> {
   return jar.get(COOKIE)?.value ?? null;
 }
 
+<<<<<<< HEAD
+=======
+export async function clearSessionId(): Promise<void> {
+  const jar = await cookies();
+  jar.delete(COOKIE);
+}
+
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 export async function ensureSessionId(): Promise<string> {
   const jar = await cookies();
   const existing = jar.get(COOKIE)?.value;

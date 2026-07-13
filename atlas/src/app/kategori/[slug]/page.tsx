@@ -72,10 +72,17 @@ export default async function CategoryPage({
         <p className="text-sm text-ink-muted">{listings.length} sonuç</p>
       </div>
 
+<<<<<<< HEAD
       {/* Filters as URL-encoded chips (05.3) */}
       <div className="mb-8 space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-ink-muted">Durum:</span>
+=======
+      {/* Filters as URL-encoded chips (05.3) — each row is one horizontally
+          scrollable line on mobile (wrapping 10+ chips buries the results). */}
+      <div className="mb-8 space-y-3">
+        <FilterRow label="Durum:">
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
           <FilterChip href={href({ durum: undefined })} active={!condition} label="Tümü" />
           {Object.entries(CONDITIONS).map(([key, label]) => (
             <FilterChip
@@ -85,16 +92,26 @@ export default async function CategoryPage({
               label={label}
             />
           ))}
+<<<<<<< HEAD
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-ink-muted">Grade:</span>
+=======
+        </FilterRow>
+        <FilterRow label="Grade:">
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
           <FilterChip href={href({ grade: undefined })} active={!grade} label="Tümü" />
           {Object.keys(GRADES).map((g) => (
             <FilterChip key={g} href={href({ grade: g })} active={grade === g} label={`Grade ${g}`} />
           ))}
+<<<<<<< HEAD
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm text-ink-muted">Sırala:</span>
+=======
+        </FilterRow>
+        <FilterRow label="Sırala:">
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
           {Object.entries(SORTS).map(([key, s]) => (
             <FilterChip
               key={key}
@@ -103,10 +120,29 @@ export default async function CategoryPage({
               label={s.label}
             />
           ))}
+<<<<<<< HEAD
         </div>
       </div>
 
       <ResultsGrid items={listings.map(toCardData)} />
+=======
+        </FilterRow>
+      </div>
+
+      <ResultsGrid
+        items={listings.map(toCardData)}
+        alert={{ categoryId: cat.id, back: href({}) }}
+      />
+    </div>
+  );
+}
+
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
+      <span className="shrink-0 text-sm text-ink-muted">{label}</span>
+      {children}
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
     </div>
   );
 }
@@ -116,7 +152,11 @@ function FilterChip({ href, active, label }: { href: string; active: boolean; la
     <Link
       href={href}
       aria-current={active ? "true" : undefined}
+<<<<<<< HEAD
       className={`inline-flex h-8 items-center rounded-full border px-3 text-sm transition-colors duration-100 ${
+=======
+      className={`inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-sm transition-colors duration-100 ${
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
         active
           ? "border-transparent bg-inverse font-semibold text-ink-inverse"
           : "border-line text-ink-secondary hover:border-line-strong hover:text-ink"

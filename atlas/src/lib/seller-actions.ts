@@ -183,7 +183,12 @@ export async function saveStep(formData: FormData): Promise<void> {
 
 /** Publish gate — the marketplace rules enforced in one place (01/06.3). */
 export async function publishListing(listingId: string): Promise<void> {
+<<<<<<< HEAD
   const { listing } = await requireOwnListing(listingId);
+=======
+  const { seller, listing } = await requireOwnListing(listingId);
+  if (listing.status !== "draft" && listing.status !== "rejected") redirect("/satici");
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 
   const problems: string[] = [];
   const normalPhotos = listing.photos.filter((p) => !p.isFlaw);
@@ -209,6 +214,7 @@ export async function publishListing(listingId: string): Promise<void> {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
     .slice(0, 60)}-${listing.id.slice(-6)}`;
 
+<<<<<<< HEAD
   // Phase 1 puts a curation queue here (submitted → review → live, 10.2).
   // Dev goes straight to live.
   await db.listing.update({
@@ -217,6 +223,24 @@ export async function publishListing(listingId: string): Promise<void> {
   });
   revalidatePath("/");
   redirect(`/urun/${slug}`);
+=======
+  // Curation queue (10.2): submitted → ops review → live | rejected.
+  // A resubmit after rejection re-enters the same queue with a clean note.
+  await db.listing.update({
+    where: { id: listing.id },
+    data: { status: "submitted", slug, submittedAt: new Date(), curationNote: null },
+  });
+  await db.auditLog.create({
+    data: {
+      actor: `seller:${seller.id}`,
+      action: listing.status === "rejected" ? "listing.resubmit" : "listing.submit",
+      entityType: "Listing",
+      entityId: listing.id,
+    },
+  });
+  revalidatePath("/satici");
+  redirect("/satici?gonderildi=1");
+>>>>>>> 8505f8c (Initialize Atlas project and local setup)
 }
 
 // --- Fulfillment (06.4 orders queue) ---
