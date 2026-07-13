@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — 04_Design_System.md §04.1.
+ * Components use semantic tokens only; the raw palette is Tailwind's
+ * default neutral/emerald/amber/red scale (04's hex values ARE those scales).
+ * Dark mode is a mapping, not a rewrite.
+ */
+
+:root {
+  --bg-page: var(--color-neutral-50);
+  --bg-surface: #ffffff;
+  --bg-subtle: var(--color-neutral-50);
+  --bg-inverse: var(--color-neutral-900);
+  --text-primary: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-600);
+  --text-muted: var(--color-neutral-500);
+  --text-inverse: #ffffff;
+  --border-default: var(--color-neutral-200);
+  --border-strong: var(--color-neutral-300);
+  --focus-ring: var(--color-neutral-900);
+  --success: var(--color-emerald-700);
+  --success-strong: var(--color-emerald-600);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-page: var(--color-neutral-950);
+    --bg-surface: var(--color-neutral-900);
+    --bg-subtle: var(--color-neutral-900);
+    --bg-inverse: var(--color-neutral-50);
+    --text-primary: var(--color-neutral-50);
+    --text-secondary: var(--color-neutral-400);
+    --text-muted: var(--color-neutral-500);
+    --text-inverse: var(--color-neutral-900);
+    --border-default: var(--color-neutral-800);
+    --border-strong: var(--color-neutral-700);
+    --focus-ring: var(--color-neutral-50);
+    --success: var(--color-emerald-500);
+    --success-strong: var(--color-emerald-500);
+  }
+}
+
+@theme inline {
+  --color-page: var(--bg-page);
+  --color-surface: var(--bg-surface);
+  --color-subtle: var(--bg-subtle);
+  --color-inverse: var(--bg-inverse);
+  --color-ink: var(--text-primary);
+  --color-ink-secondary: var(--text-secondary);
+  --color-ink-muted: var(--text-muted);
+  --color-ink-inverse: var(--text-inverse);
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+  --color-ring-token: var(--focus-ring);
+  --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+  /* 04.1 radius tokens */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* 04.1 shadows — whispers, not statements */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-card-hover: 0 4px 12px rgb(0 0 0 / 0.08);
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.12);
+
+  /* 04.3 motion — nothing exceeds 300ms, no bounce */
+  --ease-out-calm: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* 04.5 — focus is always visible */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* 04.1 — prices use tabular numerals; applied via .price utility */
+.price {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 04.3 — reduced motion collapses transitions globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

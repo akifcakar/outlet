@@ -1,0 +1,150 @@
+// Atlas domain schema — implements 07_Data_Model.md (MVP subset).
+// Dev runs on SQLite (zero setup); production is PostgreSQL (08_Technical_Architecture.md).
+// SQLite has no native enums — condition/grade/status are strings validated
+// against the vocab in src/lib/vocab.ts. Money is integer kuruş, never floats.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Seller {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  displayName String
+  legalName   String
+  city        String
+  status      String    @default("approved") // applied | in_review | approved | suspended
+  verifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  listings    Listing[]
+  orders      Order[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  listings Listing[]
+}
+
+model Brand {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  listings Listing[]
+}
+
+model Listing {
+  id                 String    @id @default(cuid())
+  slug               String    @unique
+  sellerId           String
+  seller             Seller    @relation(fields: [sellerId], references: [id])
+  categoryId         String
+  category           Category  @relation(fields: [categoryId], references: [id])
+  brandId            String
+  brand              Brand     @relation(fields: [brandId], references: [id])
+  title              String
+  description        String
+  condition          String // keys per 07.2: display_item | open_box | ...
+  grade              String // A | B | C
+  whyDiscounted      String
+  originalPriceKurus Int
+  priceKurus         Int
+  stock              Int       @default(1)
+  handlingDays       Int       @default(2)
+  shippingKurus      Int       @default(0)
+  warrantyText       String
+  status             String    @default("live") // draft | submitted | live | sold_out | removed
+  publishedAt        DateTime?
+  soldOutAt          DateTime?
+  createdAt          DateTime  @default(now())
+  photos             ListingPhoto[]
+  holds              StockHold[]
+  orders             Order[]
+
+  @@index([status, categoryId])
+  @@index([status, publishedAt])
+}
+
+model ListingPhoto {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+  position  Int
+  url       String
+  width     Int
+  height    Int
+  isFlaw    Boolean @default(false)
+  flawLabel String?
+
+  @@index([listingId, position])
+}
+
+// 07.3 — the oversell guard. stock_available = stock - active holds, checked atomically.
+model StockHold {
+  id        String   @id @default(cuid())
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  userId    String
+  qty       Int      @default(1)
+  status    String   @default("active") // active | converted | expired | released
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([listingId, status, expiresAt])
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  buyerId         String
+  buyer           User     @relation(fields: [buyerId], references: [id])
+  sellerId        String
+  seller          Seller   @relation(fields: [sellerId], references: [id])
+  listingId       String
+  listing         Listing  @relation(fields: [listingId], references: [id])
+  itemPriceKurus  Int
+  shippingKurus   Int
+  totalKurus      Int
+  status          String   @default("pending_payment") // 07.4 state chain
+  deliveryAddress String // JSON snapshot (07.4)
+  guestSessionId  String? // guest checkout: gates the confirmation page until accounts exist
+  trackingNo      String? // set by seller on ship (06.4)
+  gradeMatched    Boolean? // the one-question grade check at confirm (05.6 → 07.6)
+  shippedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  snapshot        TransparencySnapshot?
+
+  @@index([guestSessionId])
+}
+
+// 07.4 — "the contract": immutable copy of what the buyer saw at purchase.
+model TransparencySnapshot {
+  id                 String   @id @default(cuid())
+  orderId            String   @unique
+  order              Order    @relation(fields: [orderId], references: [id])
+  condition          String
+  grade              String
+  whyDiscounted      String
+  originalPriceKurus Int
+  priceKurus         Int
+  warrantyText       String
+  photoUrls          String // JSON array (SQLite: no native arrays)
+  createdAt          DateTime @default(now())
+}
